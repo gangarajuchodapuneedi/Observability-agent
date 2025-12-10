@@ -4,6 +4,71 @@ import * as https from 'https';
 import { URL } from 'url';
 
 /**
+ * Manages webview panels for displaying ArchDrift pages
+ */
+class ArchDriftPanel {
+    private static panels: Map<string, vscode.WebviewPanel> = new Map();
+    private static readonly ARCHDRIFT_URL = 'https://arch-drift.vercel.app/';
+
+    public static createOrShow() {
+        const panelKey = 'archdrift-main';
+
+        // If panel already exists, reveal it
+        if (ArchDriftPanel.panels.has(panelKey)) {
+            const existingPanel = ArchDriftPanel.panels.get(panelKey);
+            if (existingPanel) {
+                existingPanel.reveal();
+                return;
+            }
+        }
+
+        // Create new panel
+        const column = vscode.window.activeTextEditor
+            ? vscode.window.activeTextEditor.viewColumn
+            : undefined;
+
+        const panel = vscode.window.createWebviewPanel(
+            'archDriftViewer',
+            'Architecture Drift',
+            column || vscode.ViewColumn.Beside,
+            {
+                enableScripts: true,
+                retainContextWhenHidden: true,
+            }
+        );
+
+        // Set webview content to load the ArchDrift URL
+        panel.webview.html = ArchDriftPanel.getHtmlForUrl(ArchDriftPanel.ARCHDRIFT_URL);
+
+        // Clean up when panel is disposed
+        panel.onDidDispose(() => {
+            ArchDriftPanel.panels.delete(panelKey);
+        });
+
+        ArchDriftPanel.panels.set(panelKey, panel);
+    }
+
+    private static getHtmlForUrl(url: string): string {
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval'; script-src * 'unsafe-inline' 'unsafe-eval'; style-src * 'unsafe-inline';">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Architecture Drift</title>
+    <style>
+        body { margin: 0; padding: 0; overflow: hidden; }
+        iframe { width: 100%; height: 100vh; border: none; }
+    </style>
+</head>
+<body>
+    <iframe src="${url}" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-top-navigation"></iframe>
+</body>
+</html>`;
+    }
+}
+
+/**
  * Manages the Observability Agent webview panel
  */
 export class ObservabilityPanel {
@@ -94,7 +159,19 @@ export class ObservabilityPanel {
                 drift_data?: any;
             };
 
-            // Send answer back to webview
+            // Check if this is an architecture drift response (mode flag or known link text)
+            const isArchDrift =
+                data.mode === 'arch_drift' ||
+                (typeof data.answer === 'string' &&
+                    data.answer.toLowerCase().includes('archdrift ui'));
+
+            if (isArchDrift) {
+                // Open ArchDrift page automatically without showing text answer
+                ArchDriftPanel.createOrShow();
+                return;
+            }
+
+            // Send answer back to webview for non-arch-drift responses
             this._panel.webview.postMessage({
                 type: 'answer',
                 question: trimmedQuestion,
