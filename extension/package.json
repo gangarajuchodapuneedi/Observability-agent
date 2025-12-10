@@ -1,0 +1,41 @@
+{
+  "name": "observability-agent",
+  "displayName": "Observability Agent",
+  "description": "Chat panel for Observability Agent backend",
+  "version": "0.0.1",
+  "publisher": "observability-agent",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/observability-agent/extension"
+  },
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "observabilityAgent.openChat",
+        "title": "Open Chat",
+        "category": "Observability Agent"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^18.x",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^5.0.0"
+  }
+}
+

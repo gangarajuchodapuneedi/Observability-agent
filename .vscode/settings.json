@@ -1,0 +1,6 @@
+{
+  "extensions.ignoreRecommendations": false,
+  "extensions.experimental.affinity": {
+    "observability-agent": 1
+  }
+}

@@ -1,0 +1,50 @@
+{
+  "policy_version": "1.0.0",
+  "metadata": {
+    "created": "2025-01-27T00:00:00Z",
+    "updated": "2025-01-27T00:00:00Z",
+    "author": "platform-team"
+  },
+  "risk_scoring": {
+    "params": {
+      "drivers": [
+        {
+          "id": "diff_size",
+          "name": "Change Size",
+          "description": "Number of lines changed in the diff",
+          "weight": 0.4,
+          "threshold": {
+            "low": 50,
+            "medium": 200,
+            "high": 500
+          }
+        },
+        {
+          "id": "sensitive_folders",
+          "name": "Sensitive File Paths",
+          "description": "Changes in critical directories that require extra attention",
+          "weight": 0.6,
+          "threshold": {
+            "patterns": [
+              "src/auth/**",
+              "src/payment/**",
+              "src/security/**",
+              "**/config/**",
+              "**/secrets/**",
+              "**/credentials/**"
+            ]
+          }
+        }
+      ],
+      "weights": {
+        "diff_size": 0.4,
+        "sensitive_folders": 0.6
+      },
+      "band_boundaries": {
+        "low": 0.3,
+        "medium": 0.6,
+        "high": 1.0
+      }
+    }
+  }
+}
